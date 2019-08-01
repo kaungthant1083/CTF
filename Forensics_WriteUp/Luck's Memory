@@ -1,0 +1,59 @@
+LUCK is the Linux Unified Key Steup volume encrypted via asymmetric asymmetric
+
+
+Firstly we need to use findaes.exe (https://sourceforge.net/projects/findaes/)
+if you use linux,you need to run with wine.
+
+wine findaes.exe memdump.dmp 
+Searching memdump.dmp
+Found AES-128 key schedule at offset 0x6ae8c80: 
+b4 c6 07 d5 93 f2 67 7b f6 3f d1 2e 54 89 ce ac 
+Found AES-128 key schedule at offset 0x6ae8e80: 
+c2 2a 94 fa b6 ef d8 15 e5 62 9a e4 75 7a 57 89 
+
+
+now you can see the key but you need to change  this hex to binary i will use xxd
+
+echo "c22a94fab6efd815e5629ae4757a5789" | xxd -r -p > key1
+echo "b4c607d593f2677bf63fd12e5489ceac" | xxd -r -p > key2
+
+next step is to mount the other dmp file with losetup 
+
+sudo losetup /dev/loop2 disk.dmp
+
+Next is we will decrypt with this volume with the above keys
+
+sudo cryptsetup luksOpen /dev/loop2 switch --master-key-file key1
+Cannot read 32 bytes from keyfile key1.
+
+sudo cryptsetup luksOpen /dev/loop2 switch --master-key-file key2
+Cannot read 32 bytes from keyfile key1.
+
+Our above keys can't read so i think we need to combine these two keys
+cat key1 key2 > key3
+cat key2 key1 > key4 
+
+and next decrypt this volume with key3 
+sudo cryptsetup luksOpen /dev/loop2 switch --master-key-file key3
+
+Bango!!! You can decrypt this volumne now.
+
+mount thie decrypted volume 
+
+mkdir /tmp/luks
+sudo mount /dev/mapper/switch /tmp/luks
+ls /tmp/luks 
+flag.txt 
+
+NOw you got the flag.txt and read it.
+Coucou!
+J'espère que tu as apprécié ce petit challenge :)
+
+Voilà ton flag: ENSIBS{No_n33d_v0lat1l1tY_w1th_AES_kEys_1n_m3morY}
+
+
+
+
+
+
+
